@@ -33,7 +33,7 @@ class TestGrader:
             full_code_file_name = '{0}.{1}'.format(code_file_path, lang)
             self.write_code_file(student_response, full_code_file_name)
         except Exception as exc:
-            logging.exception("Exception in language part with {}".format(exc))
+            logger.exception("Exception in language part with {}".format(exc))
             return self.response_with_error_v2(exc.message)
 
         output = []
@@ -273,7 +273,7 @@ class TestGrader:
             result = self.compare_outputs(output, expected_output_file, problem_name)
             return result
         except Exception as e:
-            logging.exception("Error when running test {}".format(e))
+            logger.exception("Error when running test {}".format(e))
             return self.respond_with_error(e.message)
 
 
