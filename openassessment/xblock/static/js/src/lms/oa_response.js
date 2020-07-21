@@ -192,8 +192,8 @@ OpenAssessment.ResponseView.prototype = {
             showCursorWhenSelecting: true,
             inputStyle: "contenteditable",
             smartIndent: true,
-		    indentWithTabs: true,
-		    indentUnit: 4
+            indentWithTabs: true,
+            indentUnit: 4
             }
         );
         this.codeEditor.setSize(null, 800);
