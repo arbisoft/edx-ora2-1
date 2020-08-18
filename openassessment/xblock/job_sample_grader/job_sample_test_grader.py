@@ -273,6 +273,6 @@ class TestGrader:
         """
         if len(output.split('\n')) > 150:
             actual_output = output.split("\n")[-150:]
-            actual_output.append("... Too much output. Extra output Trimmed.")
+            actual_output.append("... Extra output Trimmed.")
             return "\n".join(actual_output)
         return output
