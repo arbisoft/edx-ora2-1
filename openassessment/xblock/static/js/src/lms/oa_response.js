@@ -161,16 +161,22 @@ OpenAssessment.ResponseView.prototype = {
         return $('.response__submission .submission__answer__part__text__value', this.element);
     },
 
-    createTextArea: function(value, width){
-        return "<textarea rows=5 style='width:" +width + "%; height:auto;' readonly>" + value + "</textarea>";
+    createTextArea: function(value){
+        var $elem = $('<p></p>');
+        $elem.text(value);
+        $elem.addClass('output_text_area');
+        return $elem;
     },
 
     errorTextArea: function(value){
-        return "<textarea rows=10 style='width:70%; height:auto;' readonly>" + value + "</textarea>";
+        var $elem = $('<p></p>');
+        $elem.text(value);
+        $elem.addClass('output_error_text_area');
+        return $elem;
     },
 
-    createOutputHeader: function(value, width){
-        return "<span style='width:" + width + "%; display:inline-block; font: 18px bold;'>"+ value +"</span>"
+    createOutputHeader: function(value){
+        return "<span style='display:inline-block; font: 18px bold;'>"+ value +"</span>"
     },
 
     /*
@@ -188,7 +194,7 @@ OpenAssessment.ResponseView.prototype = {
             indentUnit: 4
             }
         );
-        this.codeEditor.setSize(null, 800);
+        this.codeEditor.setSize(null, 600);
         this.updateEditorMode(this.getLanguage());
     }
     },
@@ -198,38 +204,48 @@ OpenAssessment.ResponseView.prototype = {
     */
     showTestCaseResult: function(test_results){
 
-        var test_status_elem = $("#test_case_status_result", this.element);
-        test_status_elem.html("");
-        var out_textarea =
-            "<p>" +
-            this.createOutputHeader("Test Input", 33) +
-            this.createOutputHeader("Your Output", 33) +
-            this.createOutputHeader("Expected Output", 33) +
-            "</p>";
+        var $table, $row, style;
+        var $test_status_elem = $("#test_case_status_result", this.element);
 
+        $table = $("<table>");
+        $table.addClass("results_table");
+        $table.append('<thead>');
+        $table.find('thead').append("<tr>");
+
+        $row = $table.find("thead > tr:last");
+        $row.append("<th>" + this.createOutputHeader("Test Input") + "</th>");
+        $row.append("<th>" + this.createOutputHeader("Your Output") + "</th>");
+        $row.append("<th>" + this.createOutputHeader("Expected Output") + "</th>");
+
+        $table.append('<tbody>');
         for(var key in test_results){
-            var style= "red";
+            $table.find('tbody').append("<tr>");
+            $row = $table.find("tbody > tr:last");
+
+            style= "rgba(255, 0, 0, 0.5)";
             if(test_results[key]['correct']==true){
-                style= "green";
+                style= "rgba(0, 255, 0, 0.5)";
             }
-            out_textarea += (
-            "<p style='outline: 3px solid " + style + "';>" +
-            this.createTextArea(test_results[key]['test_input'], 33) +
-            this.createTextArea(test_results[key]['actual_output'], 33) +
-            this.createTextArea(test_results[key]['expected_output'], 34) +
-            "</p>"
-            )
+            $row.css('background', style);
+
+            $row.append("<td>");
+            $row.find("td:last").append(this.createTextArea(test_results[key]['test_input']));
+            $row.append("<td>");
+            $row.find("td:last").append(this.createTextArea(test_results[key]['actual_output']));
+            $row.append("<td>");
+            $row.find("td:last").append(this.createTextArea(test_results[key]['expected_output']));
         }
-        test_status_elem.html(out_textarea);
+        $test_status_elem.html($table);
     },
 
     /*
     Add the HTML to show how many test cases passed from the total number
     */
     showResultSummary: function(correct, total){
-
-        var summary = "<b>Results</b>: " + correct + " out of " + total + " test cases passed"
-        $("#test_cases_summary").html("<p class='bold_text'>" + summary + "</p>")
+        var $summary = $("<p>");
+        $summary.addClass('results_summary');
+        $summary.append("<strong>Test Cases Result: " + correct + "/" + total + "</strong></p>");
+        $("#test_cases_summary").html($summary);
     },
 
     /*

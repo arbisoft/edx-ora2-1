@@ -1217,3 +1217,40 @@ select#submission__answer__language{
 div.testSummary{
     padding: 10px;
 }
+
+p.output_text_area {
+  font-size: $text-size;
+  height: $text-area-height/2;
+  padding: $baseline-v/4;
+  margin: $baseline-v/4;
+  overflow: auto;
+  text-overflow: clip;
+  white-space: pre-wrap;
+}
+
+p.output_error_text_area {
+  background: $error-background;
+  border: 2px solid $black;
+  font-size: $text-size;
+  height: $text-area-height;
+  overflow: auto;
+  padding: $baseline-v/4;
+  margin: $baseline-v/4;
+  text-overflow: clip;
+  white-space: pre-wrap;
+}
+
+p.results_summary {
+    color: $text-color-secondary;
+    font-size: $medium-text-size;
+    margin-top: ($baseline-v/2);
+}
+
+table.results_table{
+    width:100%;
+}
+
+table.results_table td, table.results_table th{
+    border: 2px solid black;
+    margin: $baseline-v/7;
+}
