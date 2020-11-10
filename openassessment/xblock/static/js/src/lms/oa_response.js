@@ -176,7 +176,7 @@ OpenAssessment.ResponseView.prototype = {
     },
 
     createOutputHeader: function(value){
-        return "<span style='display:inline-block; font: 18px bold;'>"+ value +"</span>"
+        return "<p class='output_text_area'>"+ value +"</p>"
     },
 
     /*
@@ -205,37 +205,42 @@ OpenAssessment.ResponseView.prototype = {
     showTestCaseResult: function(test_results){
 
         var $table, $row, style;
-        var $test_status_elem = $("#test_case_status_result", this.element);
+        var header_keys = ["Test Input", "Your Output", "Expected Output"];
+        var data_keys = ["test_input", "actual_output", "expected_output"];
 
+        // Setup Table
         $table = $("<table>");
         $table.addClass("results_table");
+
+        // Setup Table header HTML and values
         $table.append('<thead>');
         $table.find('thead').append("<tr>");
-
         $row = $table.find("thead > tr:last");
-        $row.append("<th>" + this.createOutputHeader("Test Input") + "</th>");
-        $row.append("<th>" + this.createOutputHeader("Your Output") + "</th>");
-        $row.append("<th>" + this.createOutputHeader("Expected Output") + "</th>");
+        for(var idx in header_keys){
+            $row.append("<th>");
+            $row.find("th:last").append(this.createOutputHeader(header_keys[idx]));
+        }
 
+        // Setup Table body HTML and values
         $table.append('<tbody>');
         for(var key in test_results){
             $table.find('tbody').append("<tr>");
             $row = $table.find("tbody > tr:last");
 
-            style= "rgba(255, 0, 0, 0.5)";
+            style= "rgba(205, 0, 0, 0.3)";
             if(test_results[key]['correct']==true){
-                style= "rgba(0, 255, 0, 0.5)";
+                style= "rgba(0, 205, 0, 0.3)";
             }
             $row.css('background', style);
 
-            $row.append("<td>");
-            $row.find("td:last").append(this.createTextArea(test_results[key]['test_input']));
-            $row.append("<td>");
-            $row.find("td:last").append(this.createTextArea(test_results[key]['actual_output']));
-            $row.append("<td>");
-            $row.find("td:last").append(this.createTextArea(test_results[key]['expected_output']));
+            for(var index in data_keys){
+                $row.append("<td>");
+                $row.find("td:last").append(this.createTextArea(test_results[key][data_keys[index]]));
+            }
         }
-        $test_status_elem.html($table);
+
+        // Update the summary element with created table
+        $("#test_case_status_result", this.element).html($table);
     },
 
     /*
@@ -270,8 +275,15 @@ OpenAssessment.ResponseView.prototype = {
           this.saveStatus(gettext("Code output matches the expected output"));
         }
         else{
-          this.saveStatus(gettext("Code output mismatch / Execution error"));
+          this.saveStatus(gettext("Code output does not match with the expected output"));
         }
+    },
+
+    /*
+    Code Execution error message
+    */
+    indicateError: function(){
+          this.saveStatus(gettext("Execution Error"));
     },
 
     /*
@@ -588,7 +600,7 @@ OpenAssessment.ResponseView.prototype = {
             view.savedResponse = savedResponse;
             if(data.error){
                 view.showRunError(data.error);
-                view.indicateCorrectness(false);
+                view.indicateError();
                 view.clearResultSummary();
             }
             else{

@@ -577,6 +577,7 @@
       padding: ($baseline-v/2) ($baseline-h/4) $baseline-v ($baseline-h/4);
       background: $color-decorative-quaternary;
       border-radius: ($baseline-v/10);
+      border: 1px solid black;
     }
 
     .response__submission__content {
@@ -1253,4 +1254,10 @@ table.results_table{
 table.results_table td, table.results_table th{
     border: 2px solid black;
     margin: $baseline-v/7;
+}
+
+table.results_table thead tr p{
+    font-weight: bold;
+    height: auto;
+    margin:0;
 }
