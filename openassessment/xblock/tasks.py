@@ -52,8 +52,11 @@ def run_and_save_staff_test_cases(block_id, sub_uuid, problem_name):
             ora_block = modulestore().get_item(UsageKey.from_string(block_id))
         except Exception:
             logger.exception(
-                "Error retreiving OpenAssessmentBlock with usage id {}.".format(
-                    block_id
+                "Error retreiving OpenAssessmentBlock with usage id {} for problem {} and uuid {}."
+                .format(
+                    block_id,
+                    problem_name,
+                    sub_uuid
                 )
             )
             return
