@@ -302,11 +302,7 @@ OpenAssessment.EditSettingsView.prototype = {
     showPrivateTestCaseResultsEnabled: function(isEnabled) {
         var sel = $('#openassessment_show_private_test_case_results_editor', this.settingsElement);
         if (isEnabled !== undefined) {
-            if (isEnabled) {
-                sel.val(1);
-            } else {
-                sel.val(0);
-            }
+            sel.val(Number(isEnabled));
         }
         return sel.val() === '1';
     },
