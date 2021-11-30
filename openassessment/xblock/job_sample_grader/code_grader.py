@@ -25,7 +25,7 @@ class CodeGraderMixin(object):
         'c++': 'cpp',
         'nodejs': 'js',
     }
-    __SECRET_DATA_DIR__ = "/root/grader_data/"
+    __SECRET_DATA_DIR__ = "/grader_data/"
     __TMP_DATA_DIR__ = "/tmp/"
 
     def grade(self, response, add_staff_cases=False):
