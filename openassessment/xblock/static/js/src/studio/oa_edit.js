@@ -198,8 +198,6 @@ OpenAssessment.StudioView.prototype = {
             feedback_default_text: view.rubricView.feedback_default_text(),
             criteria: view.rubricView.criteriaDefinition(),
             title: view.settingsView.displayName(),
-            labels: view.settingsView.labels(),
-            executor: view.settingsView.executor(),
             submissionStart: view.settingsView.submissionStart(),
             submissionDue: view.settingsView.submissionDue(),
             assessments: view.settingsView.assessmentsDescription(),
@@ -208,8 +206,6 @@ OpenAssessment.StudioView.prototype = {
             fileUploadType: fileUploadType !== '' ? fileUploadType : null,
             fileTypeWhiteList: view.settingsView.fileTypeWhiteList(),
             latexEnabled: view.settingsView.latexEnabled(),
-            showPrivateTestCaseResultsEnabled: view.settingsView.showPrivateTestCaseResultsEnabled(),
-            showFileReadCodeEnabled: view.settingsView.showFileReadCodeEnabled(),
             leaderboardNum: view.settingsView.leaderboardNum(),
             editorAssessmentsOrder: view.settingsView.editorAssessmentsOrder(),
         }).done(

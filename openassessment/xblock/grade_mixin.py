@@ -9,11 +9,9 @@ from django.utils.translation import ugettext as _
 
 from lazy import lazy
 from openassessment.assessment.errors import PeerAssessmentError, SelfAssessmentError
-from openassessment.xblock.data_conversion import update_submission_old_format_answer
 from xblock.core import XBlock
 
-from openassessment.xblock.utils import get_code_language
-from openassessment.xblock.job_sample_grader.utils import is_design_problem
+from .data_conversion import create_submission_dict
 
 
 class GradeMixin(object):
@@ -75,10 +73,7 @@ class GradeMixin(object):
         except (sub_api.SubmissionError, PeerAssessmentError, SelfAssessmentError):
             return self.render_error(self._(u"An unexpected error occurred."))
         else:
-            if self.is_course_staff:
-                return self.render_assessment(path, context)
-            else:
-                return self.render_assessment(path, {})
+            return self.render_assessment(path, context)
 
     def render_grade_complete(self, workflow):
         """
@@ -135,14 +130,11 @@ class GradeMixin(object):
         # when all the criteria in the rubric are feedback-only (no options).
         score = workflow['score']
 
-        context = {'student_submission': update_submission_old_format_answer(student_submission)}
-
-        context.update({
+        context = {
             'score': score,
             'feedback_text': feedback_text,
             'has_submitted_feedback': has_submitted_feedback,
-            'code_language': get_code_language(context["student_submission"]['answer']['language']),
-            'design_problem': is_design_problem(self.display_name),
+            'student_submission': create_submission_dict(student_submission, self.prompts),
             'peer_assessments': peer_assessments,
             'grade_details': self.grade_details(
                 submission_uuid,
@@ -155,9 +147,9 @@ class GradeMixin(object):
             'prompts_type': self.prompts_type,
             'file_urls': self.get_download_urls_from_submission(student_submission),
             'xblock_id': self.get_xblock_id()
-        })
+        }
 
-        return 'openassessmentblock/grade/oa_grade_complete.html', context
+        return ('openassessmentblock/grade/oa_grade_complete.html', context)
 
     def render_grade_incomplete(self, workflow):
         """
