@@ -57,16 +57,6 @@ OpenAssessment.EditSettingsView = function(element, assessmentViews, data) {
         {min: 0, max: 100}
     );
 
-    this.labelsInputField = new OpenAssessment.InputControl(
-        $('#openassessment_labels_editor', this.element),
-        function(value) {
-            if (/((?![a-z ,]).)+/g.test(value)){
-                return ['Labels do not follow all the format rules.'];
-            }
-            return [];
-        }
-    );
-
     this.fileTypeWhiteListInputField = new OpenAssessment.InputControl(
         $('#openassessment_submission_white_listed_file_types', this.element),
         function(value) {
@@ -149,21 +139,6 @@ OpenAssessment.EditSettingsView.prototype = {
     },
 
     /**
-    Get or set the labels of the problem.
-
-    Args:
-        labels (string, optional): If provided, set the labels (a string with comma-separated values).
-
-    Returns:
-        string
-
-    **/
-   labels: function(labels) {
-    var sel = $('#openassessment_labels_editor', this.settingsElement);
-    return OpenAssessment.Fields.stringField(sel, labels);
-},
-
-    /**
     Get or set the submission start date.
 
     Args:
@@ -204,23 +179,6 @@ OpenAssessment.EditSettingsView.prototype = {
      */
     textResponseNecessity: function(value) {
         var sel = $('#openassessment_submission_text_response', this.settingsElement);
-        if (value !== undefined) {
-            sel.val(value);
-        }
-        return sel.val();
-    },
-
-    /**
-     Get or set code executor.
-
-    Args:
-        value (string, optional): If provided, set executor.
-
-    Returns:
-        string a valid option.
-     */
-    executor: function(value) {
-        var sel = $('#openassessment_executor', this.settingsElement);
         if (value !== undefined) {
             sel.val(value);
         }
@@ -307,39 +265,6 @@ OpenAssessment.EditSettingsView.prototype = {
         }
         return sel.val() === '1';
     },
-
-    /**
-    Enable / disable rendering of private test case results.
-
-    Args:
-        isEnabled(boolean, optional): if provided enable/disable rendering of private test case results.
-    Returns:
-        boolean
-    **/
-    showPrivateTestCaseResultsEnabled: function(isEnabled) {
-        var sel = $('#openassessment_show_private_test_case_results_editor', this.settingsElement);
-        if (isEnabled !== undefined) {
-            sel.val(Number(isEnabled));
-        }
-        return sel.val() === '1';
-    },
-
-    /**
-    Enable / disable rendering of read file code.
-
-    Args:
-        isEnabled(boolean, optional): if provided enable/disable rendering of read file code.
-    Returns:
-        boolean
-    **/
-    showFileReadCodeEnabled: function(isEnabled) {
-        var sel = $('#openassessment_show_file_read_code_editor', this.settingsElement);
-        if (isEnabled !== undefined) {
-            sel.val(Number(isEnabled));
-        }
-        return sel.val() === '1';
-    },
-
     /**
     Get or set the number of scores to show in the leaderboard.
     If set to 0, the leaderboard will not be shown.
@@ -436,7 +361,6 @@ OpenAssessment.EditSettingsView.prototype = {
         isValid = (this.startDatetimeControl.validate() && isValid);
         isValid = (this.dueDatetimeControl.validate() && isValid);
         isValid = (this.leaderboardIntField.validate() && isValid);
-        isValid = (this.labelsInputField.validate() && isValid);
         if (this.fileUploadType() === 'custom') {
             isValid = (this.fileTypeWhiteListInputField.validate() && isValid);
         } else {
@@ -496,7 +420,6 @@ OpenAssessment.EditSettingsView.prototype = {
         this.dueDatetimeControl.clearValidationErrors();
         this.leaderboardIntField.clearValidationErrors();
         this.fileTypeWhiteListInputField.clearValidationErrors();
-        this.labelsInputField.clearValidationErrors();
         $.each(this.assessmentViews, function() {
             this.clearValidationErrors();
         });

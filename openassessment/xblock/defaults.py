@@ -158,5 +158,3 @@ DEFAULT_EDITOR_ASSESSMENTS_ORDER = [
     "self-assessment",
     "staff-assessment",
 ]
-
-DEFAULT_LABEL_LIST = list()
