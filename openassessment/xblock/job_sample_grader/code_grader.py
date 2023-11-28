@@ -13,6 +13,7 @@ from openassessment.xblock.code_executor.factory import (
     CODE_EXECUTOR_CONFIGS,
     CodeExecutorFactory,
 )
+from openassessment.xblock.code_linter.factory import CodeLinterFactory
 from openassessment.xblock.enums import CodeExecutorOption
 from openassessment.xblock.job_sample_grader.utils import (
     is_design_problem,
@@ -493,6 +494,18 @@ class CodeGraderMixin(object):
         except IndexError:
             output_error = error
         return truncate_error_output(output_error)
+
+    def grade_rubric(self, source_code, executor_id):
+
+        code_linter = CodeLinterFactory.get_code_linter(
+        executor_id.split(':')[0],
+        source_code=source_code,
+        )
+
+        with code_linter:
+            output = code_linter.run_linter()
+
+        return output
 
     def grade_response(self, data, problem_name, add_staff_output=False):
         """
