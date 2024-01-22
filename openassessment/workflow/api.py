@@ -183,7 +183,6 @@ def get_workflow_for_submission(submission_uuid, assessment_requirements):
 def update_from_assessments(submission_uuid, assessment_requirements, override_submitter_requirements=False):
     """
     Update our workflow status based on the status of the underlying assessments.
-
     We pass in the `assessment_requirements` each time we make the request
     because the canonical requirements are stored in the `OpenAssessmentBlock`
     problem definition and may change over time. Because this method also
