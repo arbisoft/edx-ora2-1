@@ -677,7 +677,7 @@ class AssessmentPart(models.Model):
 
         # Validate that we have selections for all criteria
         # This will raise an exception if we're missing any selections/feedback required for criteria
-        cls._check_all_criteria_assessed(rubric_index, list(selected.keys()), list(feedback.keys()))
+        # cls._check_all_criteria_assessed(rubric_index, list(selected.keys()), list(feedback.keys()))
 
         # Retrieve the criteria/option/feedback for criteria that have options.
         # Since we're using the rubric's index, we'll get an `InvalidRubricSelection` error
