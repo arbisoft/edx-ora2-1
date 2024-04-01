@@ -33,7 +33,7 @@ OpenAssessment.ResponseView = function (element, server, fileUploader, baseView,
     this.isRendering = false;
     this.dateFactory = new OpenAssessment.DateTimeFactory(this.element);
     this.codeEditor = null;
-    this.languageError = false;
+    this.languageError = true;
 };
 
 OpenAssessment.ResponseView.prototype = {
