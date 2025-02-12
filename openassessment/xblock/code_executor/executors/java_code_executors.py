@@ -4,7 +4,7 @@ from ..interface import CodeExecutor
 
 
 class JavaCodeExecutor(CompiledLanguageExecutorMixin, CodeExecutor):
-    docker_image = 'litmustest/code-executor-openjdk:19'
+    docker_image = 'litmustest/code-executor-openjdk-sqlite:19'
     language = 'java'
     version = 'openjdk-19'
     display_name = 'Java 19 (openjdk 19)'
