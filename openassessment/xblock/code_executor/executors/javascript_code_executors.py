@@ -17,12 +17,12 @@ from ..interface import CodeExecutor
 
 
 class JavascriptCodeExecutorV18(ScriptedLanguageExecutorMixin, CodeExecutor):
-    docker_image = 'litmustest/code-executor-node:18.14.1'
+    docker_image = 'litmustest/code-executor-node-sqlite:18.14.1'
     language = 'javascript'
     version = 'nodejs-18.14.1'
     display_name = 'Javascript (NodeJS 18.14.1)'
 
-    id = CodeExecutor.create_id('javascript', 'nodejs-18.14.1')
+    id = CodeExecutor.create_id('javascript', 'nodejs-sqlite-18.14.1')
 
     SOURCE_FILE_NAME_TEMPLATE = '{name}.js'
     RUN_COMMAND_STDIN_INPUT_TEMPLATE = 'node {source_file}'

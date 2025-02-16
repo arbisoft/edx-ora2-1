@@ -4,7 +4,7 @@ from ..interface import CodeExecutor
 
 
 class JavaCodeExecutor(CompiledLanguageExecutorMixin, CodeExecutor):
-    docker_image = 'litmustest/code-executor-openjdk:19'
+    docker_image = 'litmustest/code-executor-openjdk-sqlite:19-slim'
     language = 'java'
     version = 'openjdk-19'
     display_name = 'Java 19 (openjdk 19)'
@@ -14,5 +14,5 @@ class JavaCodeExecutor(CompiledLanguageExecutorMixin, CodeExecutor):
     SOURCE_FILE_NAME_TEMPLATE = 'Main.java'
     EXECUTABLE_FILE_NAME_TEMPLATE = 'Main'
     COMPILE_COMMAND_TEMPLATE = 'javac {source_file}'
-    RUN_COMMAND_STDIN_INPUT_TEMPLATE = 'java {executable_file}'
-    RUN_COMMAND_FILE_INPUT_TEMPLATE = 'java {executable_file} {input_file}'
+    RUN_COMMAND_STDIN_INPUT_TEMPLATE = 'java $JAVA_OPTS {executable_file}'
+    RUN_COMMAND_FILE_INPUT_TEMPLATE = 'java $JAVA_OPTS {executable_file} {input_file}'
