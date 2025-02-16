@@ -663,7 +663,15 @@ class SubmissionMixin(object):
         # so that later we can add additional response fields.
         files_descriptions = files_descriptions if files_descriptions else []
         student_sub_dict = student_sub_data
+        print("student_sub_dict")
+        print(student_sub_dict)
+        logger.info("student_sub_dict")
+        logger.info(student_sub_dict)
 
+        print("student_item_dict")
+        print(student_item_dict)
+        logger.info("student_item_dict")
+        logger.info(student_item_dict)
         # if self.file_upload_type:
         #     student_sub_dict['file_keys'] = []
         #     student_sub_dict['files_descriptions'] = []
