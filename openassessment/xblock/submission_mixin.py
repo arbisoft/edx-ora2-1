@@ -697,7 +697,7 @@ class SubmissionMixin(object):
                     logger.info("item_key")
                     logger.info(item_key)
                 except Exception as e:
-                    logger.exception(f"Error generating item_key: {str(e)}")
+                    logger.exception("Error generating item_key: " + str(e))
                     continue
                 try:
                     url = file_upload_api.get_download_url(item_key)
