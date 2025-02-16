@@ -664,36 +664,36 @@ class SubmissionMixin(object):
         files_descriptions = files_descriptions if files_descriptions else []
         student_sub_dict = student_sub_data
 
-        if self.file_upload_type:
-            student_sub_dict['file_keys'] = []
-            student_sub_dict['files_descriptions'] = []
-            for i in range(self.MAX_FILES_COUNT):
-                key_to_save = ''
-                file_description = ''
-                item_key = self._get_student_item_key(i)
-                try:
-                    url = file_upload_api.get_download_url(item_key)
-                    if url:
-                        key_to_save = item_key
-                        try:
-                            file_description = files_descriptions[i]
-                        except IndexError:
-                            pass
-                except FileUploadError:
-                    logger.exception(
-                        u"FileUploadError for student_item: {student_item_dict}"
-                        u" and submission data: {student_sub_data} with file"
-                        "descriptions {files_descriptions}".format(
-                            student_item_dict=student_item_dict,
-                            student_sub_data=student_sub_data,
-                            files_descriptions=files_descriptions
-                        )
-                    )
-                if key_to_save:
-                    student_sub_dict['file_keys'].append(key_to_save)
-                    student_sub_dict['files_descriptions'].append(file_description)
-                else:
-                    break
+        # if self.file_upload_type:
+        #     student_sub_dict['file_keys'] = []
+        #     student_sub_dict['files_descriptions'] = []
+        #     for i in range(self.MAX_FILES_COUNT):
+        #         key_to_save = ''
+        #         file_description = ''
+        #         item_key = self._get_student_item_key(i)
+        #         try:
+        #             url = file_upload_api.get_download_url(item_key)
+        #             if url:
+        #                 key_to_save = item_key
+        #                 try:
+        #                     file_description = files_descriptions[i]
+        #                 except IndexError:
+        #                     pass
+        #         except FileUploadError:
+        #             logger.exception(
+        #                 u"FileUploadError for student_item: {student_item_dict}"
+        #                 u" and submission data: {student_sub_data} with file"
+        #                 "descriptions {files_descriptions}".format(
+        #                     student_item_dict=student_item_dict,
+        #                     student_sub_data=student_sub_data,
+        #                     files_descriptions=files_descriptions
+        #                 )
+        #             )
+        #         if key_to_save:
+        #             student_sub_dict['file_keys'].append(key_to_save)
+        #             student_sub_dict['files_descriptions'].append(file_description)
+        #         else:
+        #             break
 
         submission = api.create_submission(student_item_dict, student_sub_dict)
         self.create_workflow(submission["uuid"])
