@@ -663,14 +663,42 @@ class SubmissionMixin(object):
         # so that later we can add additional response fields.
         files_descriptions = files_descriptions if files_descriptions else []
         student_sub_dict = student_sub_data
+        print("student_sub_dict")
+        print(student_sub_dict)
+        logger.info("student_sub_dict")
+        logger.info(student_sub_dict)
 
+        print("student_item_dict")
+        print(student_item_dict)
+        logger.info("student_item_dict")
+        logger.info(student_item_dict)
         if self.file_upload_type:
             student_sub_dict['file_keys'] = []
             student_sub_dict['files_descriptions'] = []
             for i in range(self.MAX_FILES_COUNT):
                 key_to_save = ''
                 file_description = ''
-                item_key = self._get_student_item_key(i)
+                # getting item key like this does not work if we run this in celery task because no xblock context is available
+                # item_key = self._get_student_item_key(i)
+                try:
+                    if i > 0:
+                        item_key = u"{student_id}/{course_id}/{item_id}/{i}".format(
+                            student_id=student_item_dict['student_id'],
+                            course_id=student_item_dict['course_id'],
+                            item_id=student_item_dict['item_id'],
+                            i=i
+                        )
+                    else:
+                        item_key = u"{student_id}/{course_id}/{item_id}".format(
+                            **student_item_dict
+                        )
+                    print("item_key")
+                    print(item_key)
+                    logger.info("item_key")
+                    logger.info(item_key)
+                except Exception as e:
+                    logger.exception("Error generating item_key: " + str(e))
+                    continue
                 try:
                     url = file_upload_api.get_download_url(item_key)
                     if url:
