@@ -101,7 +101,7 @@ class CodeGraderMixin(object):
             try:
                 details = self.run_design_code(executor_id, source_code=source_code)
                 if len(json.dumps(details)) > SUBMISSION_MAX_SIZE:
-                    error = 'Output size exceeded. Maximum allowed size is 100 KB.'
+                    error = 'Output size exceeded. Maximum allowed size is 1 MB.'
                     output.extend(self.response_with_error_v2(error, is_design_problem(usage_key, problem_name)))
                 else:
                     output.append(details)
@@ -111,7 +111,7 @@ class CodeGraderMixin(object):
             try:
                 details = self.run_code('sample', executor_id, source_code, problem_name)
                 if len(json.dumps(details)) > SUBMISSION_MAX_SIZE:
-                    output.extend(self.response_with_error_v2('Output size exceeded. Maximum allowed size is 100 KB.'))
+                    output.extend(self.response_with_error_v2('Output size exceeded. Maximum allowed size is 1 MB.'))
                 else:
                     output.append(details)
             except CodeCompilationError as ex:
@@ -120,8 +120,7 @@ class CodeGraderMixin(object):
                 try:
                     details = self.run_code('staff', executor_id, source_code, problem_name)
                     if len(json.dumps(details)) > SUBMISSION_MAX_SIZE:
-                        output.extend(self.response_with_error_v2('Output size exceeded. Maximum allowed size is 100 '
-                                                                  'KB.'))
+                        output.extend(self.response_with_error_v2('Output size exceeded. Maximum allowed size is 1 MB.'))
                     else:
                         output.append(details)
                 except CodeCompilationError as ex:
