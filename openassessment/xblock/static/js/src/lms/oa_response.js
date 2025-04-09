@@ -633,196 +633,196 @@ OpenAssessment.ResponseView.prototype = {
         this.handleResponseChanged();
         var defaultCodes = {
             python: `import sys
-          import os
-          import urllib.request
-          
-          download_link = 'https://www.dropbox.com/scl/fi/bqvhl20htpc9h7asvn9vb/poets_archive.db?rlkey=isnb3ms6bty32gh1kg6s4trkx&st=pifjsr76&dl=1'
-          file_path = "poets_archive.db"
-          
-          if not os.path.exists(file_path):
-              # Download the database file
-              urllib.request.urlretrieve(download_link, file_path)
-          
-          # Reading input parameters
-          params = open(sys.argv[1], 'r').readlines()
-          
-          # Write your code here.`,
+import os
+import urllib.request
+
+download_link = 'https://www.dropbox.com/scl/fi/bqvhl20htpc9h7asvn9vb/poets_archive.db?rlkey=isnb3ms6bty32gh1kg6s4trkx&st=pifjsr76&dl=1'
+file_path = "poets_archive.db"
+
+if not os.path.exists(file_path):
+    # Download the database file
+    urllib.request.urlretrieve(download_link, file_path)
+
+# Reading input parameters
+params = open(sys.argv[1], 'r').readlines()
+
+# Write your code here.`,
           
             javascript: `const fs = require('fs');
-          const sqlite3 = require('/usr/local/lib/node_modules/sqlite3');
-          const https = require("https");
-          
-          
-          function downloadFile(url, outputFile) {
-            return new Promise((resolve, reject) => {
-                const file = fs.createWriteStream(outputFile);
+const sqlite3 = require('/usr/local/lib/node_modules/sqlite3');
+const https = require("https");
 
-                https
-                .get(url, (response) => {
-                    if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
-                        return downloadFile(response.headers.location, outputFile).then(resolve).catch(reject);
-                    } else if (response.statusCode !== 200) {
-                        reject(response.statusCode);
-                        return;
-                    }
 
-                    response.pipe(file);
-                    file.on("finish", () => {
-                        file.close();
-                        resolve();
-                    });
-                })
-                .on("error", (err) => {
-                    fs.unlink(outputFile, () => {}); // Delete file on error
-                    reject(err.message);
-                });
-            });
-          }
+function downloadFile(url, outputFile) {
+return new Promise((resolve, reject) => {
+    const file = fs.createWriteStream(outputFile);
 
-          (async () => {
-            try {
-                // Download data
-                const url = "https://www.dropbox.com/scl/fi/bqvhl20htpc9h7asvn9vb/poets_archive.db?rlkey=isnb3ms6bty32gh1kg6s4trkx&st=pifjsr76&dl=1";
-                const filename = "poets_archive.db";
-                await downloadFile(url, filename);
-                
-                // Reading input parameters
-                const args = process.argv.slice(2);
-                const fileName = args[0];
-                
-                const content = fs.readFileSync(fileName).toString();
-                const params = content.split('\\n');
-                
-                // Write your code here.
-            } catch (error) {
-                console.error("Download failed:", error);
-            }
-          })();`,
+    https
+    .get(url, (response) => {
+        if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
+            return downloadFile(response.headers.location, outputFile).then(resolve).catch(reject);
+        } else if (response.statusCode !== 200) {
+            reject(response.statusCode);
+            return;
+        }
+
+        response.pipe(file);
+        file.on("finish", () => {
+            file.close();
+            resolve();
+        });
+    })
+    .on("error", (err) => {
+        fs.unlink(outputFile, () => {}); // Delete file on error
+        reject(err.message);
+    });
+});
+}
+
+(async () => {
+try {
+    // Download data
+    const url = "https://www.dropbox.com/scl/fi/bqvhl20htpc9h7asvn9vb/poets_archive.db?rlkey=isnb3ms6bty32gh1kg6s4trkx&st=pifjsr76&dl=1";
+    const filename = "poets_archive.db";
+    await downloadFile(url, filename);
+    
+    // Reading input parameters
+    const args = process.argv.slice(2);
+    const fileName = args[0];
+    
+    const content = fs.readFileSync(fileName).toString();
+    const params = content.split('\\n');
+    
+    // Write your code here.
+} catch (error) {
+    console.error("Download failed:", error);
+}
+})();`,
           
             java: `import java.io.File;
-          import java.util.Scanner;
-          import java.io.IOException;
-          import java.nio.file.Files;
-          import java.nio.file.Path;
-          import java.net.URI;
-          import java.net.http.HttpClient;
-          import java.net.http.HttpRequest;
-          import java.net.http.HttpResponse;
-          
-          public class Main {
-            public static void main(String[] args) {
-              String url = "https://www.dropbox.com/scl/fi/bqvhl20htpc9h7asvn9vb/poets_archive.db?rlkey=isnb3ms6bty32gh1kg6s4trkx&st=pifjsr76&dl=1";
-              String filename = "poets_archive.db";
-              
-              try {
-                // Downloading DB files
-                downloadFile(url, filename);
+import java.util.Scanner;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
-                // Reading parameters
-                File inputFile = new File(args[0]);
-                Scanner inputReader = new Scanner(inputFile);
-                while (inputReader.hasNextLine()) {
-                  String line = inputReader.nextLine();
-          
-                  // Write your code here.
-                }
-                inputReader.close();
-              } catch (IOException | InterruptedException e) {
-                System.out.println("An error occurred.");
-                e.printStackTrace();
-              }
-            }
-            
-            public static void downloadFile(String url, String outputFile) throws IOException, InterruptedException {
-                HttpClient client = HttpClient.newBuilder()
-                        .followRedirects(HttpClient.Redirect.ALWAYS)  // Enable redirect handling
-                        .build();
+public class Main {
+public static void main(String[] args) {
+    String url = "https://www.dropbox.com/scl/fi/bqvhl20htpc9h7asvn9vb/poets_archive.db?rlkey=isnb3ms6bty32gh1kg6s4trkx&st=pifjsr76&dl=1";
+    String filename = "poets_archive.db";
+    
+    try {
+    // Downloading DB files
+    downloadFile(url, filename);
 
-                HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create(url))
-                        .GET()
-                        .build();
+    // Reading parameters
+    File inputFile = new File(args[0]);
+    Scanner inputReader = new Scanner(inputFile);
+    while (inputReader.hasNextLine()) {
+        String line = inputReader.nextLine();
 
-                HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+        // Write your code here.
+    }
+    inputReader.close();
+    } catch (IOException | InterruptedException e) {
+    System.out.println("An error occurred.");
+    e.printStackTrace();
+    }
+}
 
-                if (response.statusCode() == 200) {
-                    Files.write(Path.of(outputFile), response.body());
-                } else {
-                    throw new IOException("Failed to download file. HTTP status: " + response.statusCode());
-                }
-            }
-          }`,
-          
+public static void downloadFile(String url, String outputFile) throws IOException, InterruptedException {
+    HttpClient client = HttpClient.newBuilder()
+            .followRedirects(HttpClient.Redirect.ALWAYS)  // Enable redirect handling
+            .build();
+
+    HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create(url))
+            .GET()
+            .build();
+
+    HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+
+    if (response.statusCode() == 200) {
+        Files.write(Path.of(outputFile), response.body());
+    } else {
+        throw new IOException("Failed to download file. HTTP status: " + response.statusCode());
+    }
+}
+}`,
+
             cpp: `#include <iostream>
-          #include <fstream>
-          #include <filesystem>
-          #include <curl/curl.h>
-          
-          using namespace std;
-          namespace fs = std::filesystem;
+#include <fstream>
+#include <filesystem>
+#include <curl/curl.h>
 
-          // Callback function to write data to a file
-          size_t write_callback(void* ptr, size_t size, size_t nmemb, FILE* stream) {
-              return fwrite(ptr, size, nmemb, stream);
-          }
+using namespace std;
+namespace fs = std::filesystem;
 
-          // Function to download the file using libcurl
-          bool download_file(const std::string& url, const std::string& output_file) {
-            CURL* curl = curl_easy_init();
-            if (!curl) {
-                std::cerr << "Failed to initialize cURL" << std::endl;
-                return false;
-            }
+// Callback function to write data to a file
+size_t write_callback(void* ptr, size_t size, size_t nmemb, FILE* stream) {
+    return fwrite(ptr, size, nmemb, stream);
+}
 
-            FILE* file = fopen(output_file.c_str(), "wb");
-            if (!file) {
-                std::cerr << "Failed to open file for writing" << std::endl;
-                curl_easy_cleanup(curl);
-                return false;
-            }
+// Function to download the file using libcurl
+bool download_file(const std::string& url, const std::string& output_file) {
+CURL* curl = curl_easy_init();
+if (!curl) {
+    std::cerr << "Failed to initialize cURL" << std::endl;
+    return false;
+}
 
-            curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
-            curl_easy_setopt(curl, CURLOPT_WRITEDATA, file);
-            curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+FILE* file = fopen(output_file.c_str(), "wb");
+if (!file) {
+    std::cerr << "Failed to open file for writing" << std::endl;
+    curl_easy_cleanup(curl);
+    return false;
+}
 
-            CURLcode res = curl_easy_perform(curl);
-            fclose(file);
-            curl_easy_cleanup(curl);
+curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
+curl_easy_setopt(curl, CURLOPT_WRITEDATA, file);
+curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 
-            if (res != CURLE_OK) {
-                std::cerr << "cURL error: " << curl_easy_strerror(res) << std::endl;
-                return false;
-            }
+CURLcode res = curl_easy_perform(curl);
+fclose(file);
+curl_easy_cleanup(curl);
 
-            return true;
-          }
+if (res != CURLE_OK) {
+    std::cerr << "cURL error: " << curl_easy_strerror(res) << std::endl;
+    return false;
+}
 
-          int main(int argc, char *argv[]) {
-            const std::string url = "https://www.dropbox.com/scl/fi/bqvhl20htpc9h7asvn9vb/poets_archive.db?rlkey=isnb3ms6bty32gh1kg6s4trkx&st=pifjsr76&dl=1";
-            const std::string filename = "poets_archive.db";
-          
-            if (!fs::exists(filename)) {
-                if (!download_file(url, filename)) {
-                    std::cerr << "Failed to download the file." << std::endl;
-                    return 1;
-                }
-            }
-            
-            ifstream inputFile(argv[1]);
-            
-            string line = "";
-            do {
-              getline(inputFile, line);
-          
-              // Write your code here.
-            } while (inputFile.good());
-          
-            return 0;
-          }`
+return true;
+}
+
+int main(int argc, char *argv[]) {
+const std::string url = "https://www.dropbox.com/scl/fi/bqvhl20htpc9h7asvn9vb/poets_archive.db?rlkey=isnb3ms6bty32gh1kg6s4trkx&st=pifjsr76&dl=1";
+const std::string filename = "poets_archive.db";
+
+if (!fs::exists(filename)) {
+    if (!download_file(url, filename)) {
+        std::cerr << "Failed to download the file." << std::endl;
+        return 1;
+    }
+}
+
+ifstream inputFile(argv[1]);
+
+string line = "";
+do {
+    getline(inputFile, line);
+
+    // Write your code here.
+} while (inputFile.good());
+
+return 0;
+}`
         };
           
-        if(this.showFileUplaodCode === 'True' && (this.codeEditor.getValue() === '' || Object.values(defaultCodes).includes(this.codeEditor.getValue()))){
+        if(this.showFileUplaodCode === 'True' && (this.codeEditor.getValue() === '' || Object.values(de6faultCodes).includes(this.codeEditor.getValue()))){
             this.codeEditor.setValue(defaultCodes[language]);
         }
     },
