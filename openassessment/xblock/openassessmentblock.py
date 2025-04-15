@@ -266,7 +266,7 @@ class OpenAssessmentBlock(MessageMixin,
     )
 
     show_file_read_code = Boolean(
-        default=False,
+        default=True,
         scope=Scope.content,
         help="Indicates whether or not to show file read code."
     )
