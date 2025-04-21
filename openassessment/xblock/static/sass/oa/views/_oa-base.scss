@@ -1188,6 +1188,12 @@
 
     .list--actions {
       padding: 0;
+
+      .list--actions__item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
     }
   }
 
@@ -1259,6 +1265,7 @@ p.results_summary {
 }
 
 table.results_table{
+    table-layout: fixed;
     width:100%;
 }
 

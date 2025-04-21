@@ -253,6 +253,7 @@ class SubmissionMixin(object):
                 )
                 if answer_too_long:
                     status_tag = 'EANSWERLENGTH'
+                    status_text =  self._(u"Answer length exceeded the limit.")
                 else:
                     msg = (
                         u"The submissions API reported an invalid request error "
