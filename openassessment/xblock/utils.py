@@ -9,7 +9,9 @@ CODE_LANGUAGES = {
     'python': 'language-python',
     'java': 'language-java',
     'cpp': 'language-cpp',
-    'javascript': 'language-nodejs'
+    'javascript': 'language-nodejs',
+    'kotlin': 'language-kotlin',
+    'swift': 'language-swift'
 }
 
 
