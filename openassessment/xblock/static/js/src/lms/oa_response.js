@@ -708,8 +708,16 @@ OpenAssessment.ResponseView.prototype = {
       else if (language == "cpp"){
         this.codeEditor.setOption("mode", "text/x-c++src");
       }
+      else if (language == "kotlin"){
+        this.codeEditor.setOption("mode", "text/x-kotlin");
+      }
+      else if (language == "swift"){
+        // Swift is not supported by CodeMirror v5, so we use
+        // the generic text/x-c++src mode.
+        this.codeEditor.setOption("mode", "text/x-c++src");
+      }
       else if (language == "javascript"){
-        this.codeEditor.setOption("mode", "javascript");
+        this.codeEditor.setOption("mode", "text/javascript");
       }
     },
 
