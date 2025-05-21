@@ -3,12 +3,12 @@ from ..interface import CodeExecutor
 
 
 class KotlinCodeExecutor(CompiledLanguageExecutorMixin, CodeExecutor):
-    docker_image = 'litmustest/code-executor-kotlin-sqlite:1.9.23'
+    docker_image = 'litmustest/code-executor-kotlin-sqlite:1.9.0'
     language = 'kotlin'
-    version = '1.9.23'
-    display_name = 'Kotlin 1.9.23'
+    version = '1.9.0'
+    display_name = 'Kotlin 1.9.0'
 
-    id = CodeExecutor.create_id('kotlin', '1.9.23')
+    id = CodeExecutor.create_id('kotlin', '1.9.0')
 
     SOURCE_FILE_NAME_TEMPLATE = 'Main.kt'
     EXECUTABLE_FILE_NAME_TEMPLATE = 'MainKt'
