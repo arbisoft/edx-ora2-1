@@ -1,8 +1,8 @@
 DEFAULT_LIMITS = {
     # CPU time in seconds, None for unlimited
-    'cputime': 20,
+    'cputime': 30,
     # Real time in seconds, None for unlimited
-    'realtime': 25,
+    'realtime': 35,
     # Memory in megabytes, None for unlimited
     'memory': 512,
     # limit the max processes the sandbox can have
