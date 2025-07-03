@@ -30,7 +30,11 @@ from lms.djangoapps.courseware.models import StudentModule
 from student.models import user_by_anonymous_id
 from edx_proctoring.models import ProctoredExamStudentAttempt
 from openassessment.xblock.data_conversion import update_submission_old_format_answer
-from .job_sample_grader.utils import is_design_problem
+from .job_sample_grader.utils import (
+    is_design_problem,
+    get_assessment_allowed_languages,
+    get_question_allowed_languages,
+)
 from .resolve_dates import DISTANT_FUTURE
 from .user_data import get_user_preferences
 from .utils import get_code_language
@@ -958,6 +962,9 @@ class SubmissionMixin(object):
         problem_closed, reason, start_date, due_date = self.is_closed('submission')
         user_preferences = get_user_preferences(self.runtime.service(self, 'user'))
 
+        student_item_dict = self.get_student_item_dict()
+        course_id = student_item_dict['course_id']
+
         path = 'openassessmentblock/response/oa_response.html'
         context = {
             **self.get_code_grader_context(),
@@ -969,6 +976,12 @@ class SubmissionMixin(object):
             "is_code_input_from_file": self.is_code_input_from_file,
             "file_upload_response": self.file_upload_response,
             "prompts_type": self.prompts_type,
+            'question_allowed_languages': get_question_allowed_languages(
+                self.scope_ids.usage_id, self.display_name
+            ),
+            'assessment_allowed_languages': get_assessment_allowed_languages(
+                course_id
+            ),
         }
 
         # Due dates can default to the distant future, in which case
