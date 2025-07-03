@@ -3,7 +3,7 @@ Holds utility functions related to code_grader module.
 """
 
 
-from litmustest_djangoapps.core.models import Question
+from litmustest_djangoapps.core.models import Question, ScheduledAssessment
 
 
 def is_design_problem(usage_id=None, problem_name=None, question=None):
@@ -19,6 +19,29 @@ def is_design_problem(usage_id=None, problem_name=None, question=None):
     )
     problem_name_in_lower = question.title.lower()
     return question.sub_category == "design_problem" or problem_name_in_lower.endswith('design problem')
+
+
+def get_question_allowed_languages(usage_id=None, problem_name=None):
+    """
+    helper method to get the allowed languages for a question
+    """
+    question = Question.get_by_usage_key(
+        usage_key=str(usage_id),
+        fallback_title=problem_name
+    )
+    return question.allowed_languages
+
+
+def get_assessment_allowed_languages(course_id=None):
+    """
+    helper method to get the allowed languages for an assessment
+    """
+    if not course_id:
+        return ''
+
+    assessment = ScheduledAssessment.objects.get(course_overview=course_id)
+    return assessment.allowed_languages
+
 
 def get_error_response(run_type, error, is_design_problem=False):
     """
