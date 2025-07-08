@@ -32,6 +32,7 @@ from edx_proctoring.models import ProctoredExamStudentAttempt
 from openassessment.xblock.data_conversion import update_submission_old_format_answer
 from .job_sample_grader.utils import (
     is_design_problem,
+    get_question_stub,
     get_assessment_allowed_languages,
     get_question_allowed_languages,
 )
@@ -976,6 +977,10 @@ class SubmissionMixin(object):
             "is_code_input_from_file": self.is_code_input_from_file,
             "file_upload_response": self.file_upload_response,
             "prompts_type": self.prompts_type,
+            "stub": get_question_stub(
+                self.scope_ids.usage_id,
+                self.display_name,
+            ),
             'question_allowed_languages': get_question_allowed_languages(
                 self.scope_ids.usage_id, self.display_name
             ),

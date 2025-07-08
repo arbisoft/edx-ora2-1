@@ -21,6 +21,17 @@ def is_design_problem(usage_id=None, problem_name=None, question=None):
     return question.sub_category == "design_problem" or problem_name_in_lower.endswith('design problem')
 
 
+def get_question_stub(usage_id=None, problem_name=None):
+    """
+    helper method to get the question stub and it's flag
+    """
+    question = Question.get_by_usage_key(
+        usage_key=str(usage_id),
+        fallback_title=problem_name
+    )
+    return question.stub
+
+
 def get_question_allowed_languages(usage_id=None, problem_name=None):
     """
     helper method to get the allowed languages for a question
@@ -29,7 +40,8 @@ def get_question_allowed_languages(usage_id=None, problem_name=None):
         usage_key=str(usage_id),
         fallback_title=problem_name
     )
-    return question.allowed_languages
+    # We need the split to filter in Template
+    return question.allowed_languages.split(',')
 
 
 def get_assessment_allowed_languages(course_id=None):
@@ -40,7 +52,8 @@ def get_assessment_allowed_languages(course_id=None):
         return ''
 
     assessment = ScheduledAssessment.objects.get(course_overview=course_id)
-    return assessment.allowed_languages
+    # We need the split to filter in Template
+    return assessment.allowed_languages.split(',')
 
 
 def get_error_response(run_type, error, is_design_problem=False):
