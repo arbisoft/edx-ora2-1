@@ -632,66 +632,110 @@ OpenAssessment.ResponseView.prototype = {
         this.clearLanguageError();
         this.handleResponseChanged();
         var defaultCodes = {
-            "python":"import sys\n" +
-                "\n" +
-                "lines = open(sys.argv[1], 'r').readlines()\n" +
-                "\n" +
-                "# Write your code here.",
-            "javascript":"const fs = require('fs');\n" +
-                "\n" +
-                "const args = process.argv.slice(2);\n" +
-                "const fileName = args[0];\n" +
-                "\n" +
-                "const content = fs.readFileSync(fileName).toString();\n" +
-                "const lines = content.split('\\n');\n" +
-                "\n" +
-                "// Write your code here.",
-            "java":"import java.io.File;\n" +
-                "import java.io.FileNotFoundException;\n" +
-                "import java.util.Scanner;\n" +
-                "\n" +
-                "\n" +
-                "public class Main {\n" +
-                "  public static void main(String[] args) {\n" +
-                "    try {\n" +
-                "      File inputFile = new File(args[0]);\n" +
-                "      Scanner inputReader = new Scanner(inputFile);\n" +
-                "      while (inputReader.hasNextLine()) {\n" +
-                "        String line = inputReader.nextLine();\n" +
-                "\n" +
-                "        // Write your code here.\n" +
-                "\n" +
-                "      }\n" +
-                "      inputReader.close();\n" +
-                "    } catch (FileNotFoundException e) {\n" +
-                "      System.out.println(\"An error occurred.\");\n" +
-                "      e.printStackTrace();\n" +
-                "    }\n" +
-                "  }\n" +
-                "}",
-            "cpp":"#include <iostream>\n" +
-                "#include <fstream>\n" +
-                "\n" +
-                "using namespace std;\n" +
-                "\n" +
-                "\n" +
-                "int main(int argc, char *argv[]) {\n" +
-                "  ifstream inputFile(argv[1]);\n" +
-                "\n" +
-                "  string line = \"\";\n" +
-                "  do {\n" +
-                "    getline(inputFile, line);\n" +
-                "\n" +
-                "    // Write your code here.\n" +
-                "\n" +
-                "  } while(inputFile.good());\n" +
-                "\n" +
-                "  return 0;\n" +
-                "}"
-         };
+            python: `
+import sys
+
+lines = open(sys.argv[1], 'r').readlines()
+
+# Write your code here.
+            `.trim(),
           
-        if(this.showFileUplaodCode === 'True' && (this.codeEditor.getValue() === '' || Object.values(defaultCodes).includes(this.codeEditor.getValue()))){
-            this.codeEditor.setValue(defaultCodes[language]);
+            javascript: `
+const fs = require('fs');
+
+const args = process.argv.slice(2);
+const fileName = args[0];
+
+const content = fs.readFileSync(fileName).toString();
+const lines = content.split('\\n');
+
+// Write your code here.
+            `.trim(),
+          
+            java: `
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        try {
+            File inputFile = new File(args[0]);
+            Scanner inputReader = new Scanner(inputFile);
+            while (inputReader.hasNextLine()) {
+                String line = inputReader.nextLine();
+
+                // Write your code here.
+
+            }
+            inputReader.close();
+        } catch (FileNotFoundException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+    }
+}
+            `.trim(),
+          
+            cpp: `
+#include <iostream>
+#include <fstream>
+
+using namespace std;
+
+int main(int argc, char *argv[]) {
+    ifstream inputFile(argv[1]);
+
+    string line = "";
+    do {
+        getline(inputFile, line);
+
+        // Write your code here.
+
+    } while(inputFile.good());
+
+    return 0;
+}
+            `.trim(),
+        
+            swift: `
+import Foundation
+
+let args = CommandLine.arguments
+let fileName = args[1]
+
+let content = try String(contentsOfFile: fileName)
+let lines = content.components(separatedBy: .newlines)
+
+// Write your code here.
+            `.trim(),
+        
+            kotlin: `
+import java.io.File
+
+fun main(args: Array<String>) {
+    val fileName = args[0]
+    val lines = File(fileName).readLines()
+    
+    for (line in lines) {
+        // Write your code here.
+    }
+}
+            `.trim()
+        };
+
+        var editor_textarea = $('.response__submission .submission__answer__part__text__value', this.element);
+        var stub = JSON.parse($(editor_textarea).attr('stub'));
+          
+        if(
+            this.showFileUplaodCode === 'True'
+            && (
+                this.codeEditor.getValue() === ''
+                || Object.values(defaultCodes).includes(this.codeEditor.getValue())
+                || Object.values(stub).includes(this.codeEditor.getValue())
+            )
+        ){
+            this.codeEditor.setValue(stub[language] ? stub[language] : defaultCodes[language]);
         }
     },
 

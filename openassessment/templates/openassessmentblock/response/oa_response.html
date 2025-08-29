@@ -66,13 +66,17 @@
                                          <select id="submission__answer__executor_id" required>
                                             <option selected disabled hidden>Choose Language </option>
                                             {% for executor in available_code_executors %}
-                                                <option
-                                                    value="{{ executor.value }}"
-                                                    {% if executor.value == user_language %} selected="true" {% endif %}
-                                                    data-executor-language="{{ executor.language }}"
-                                                >
-                                                    {{ executor.name }}
-                                                </option>
+                                                {% if executor.language in question_allowed_languages %}
+                                                    {% if executor.language in assessment_allowed_languages %}
+                                                        <option
+                                                            value="{{ executor.value }}"
+                                                            {% if executor.value == user_language %} selected="true" {% endif %}
+                                                            data-executor-language="{{ executor.language }}"
+                                                        >
+                                                            {{ executor.name }}
+                                                        </option>
+                                                    {% endif %}
+                                                {% endif %}
                                             {% endfor %}
                                         </select>
 
@@ -84,6 +88,7 @@
                                             id="submission__answer__part__text__{{ xblock_id }}"
                                             class="submission__answer__part__text__value"
                                             show_file_read_code="{{show_file_read_code}}"
+                                            stub="{{stub}}"
                                             data-preview="submission"
                                             aria-labelledby="submission__answer__part__text__title__{{ xblock_id }}"
                                             aria-describedby="submission__answer__tip__{{ xblock_id }}"
