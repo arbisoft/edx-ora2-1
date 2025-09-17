@@ -721,7 +721,20 @@ fun main(args: Array<String>) {
         // Write your code here.
     }
 }
-            `.trim()
+            `.trim(),
+
+            php: `
+<?php
+
+$fileName = $argv[1];
+$lines = file($fileName, FILE_IGNORE_NEW_LINES);
+
+foreach ($lines as $line) {
+    // Write your code here.
+}
+
+?>
+            `.trim(),
         };
 
         var editor_textarea = $('.response__submission .submission__answer__part__text__value', this.element);
@@ -755,10 +768,11 @@ fun main(args: Array<String>) {
       else if (language == "kotlin"){
         this.codeEditor.setOption("mode", "text/x-kotlin");
       }
+      else if (language == "php"){
+        this.codeEditor.setOption("mode", "text/x-php");
+      }
       else if (language == "swift"){
-        // Swift is not supported by CodeMirror v5, so we use
-        // the generic text/x-c++src mode.
-        this.codeEditor.setOption("mode", "text/x-c++src");
+        this.codeEditor.setOption("mode", "text/x-swift");
       }
       else if (language == "javascript"){
         this.codeEditor.setOption("mode", "text/javascript");
