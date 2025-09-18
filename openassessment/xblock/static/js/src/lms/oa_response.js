@@ -756,7 +756,7 @@ foreach ($lines as $line) {
     Update the code editor mode based on the passed language
     **/
     updateEditorMode: function(language){
-      if (language == "python"){
+      if (language == "python" || language == "python-ml"){
         this.codeEditor.setOption("mode", {name: "python", version: 3});
       }
       else if (language == "java"){
