@@ -7,11 +7,13 @@ from openassessment.xblock.code_executor.factory import CODE_EXECUTOR_CONFIG_ID_
 # Map language name to be used in template code class
 CODE_LANGUAGES = {
     'python': 'language-python',
+    'python-ml': 'language-python',
     'java': 'language-java',
     'cpp': 'language-cpp',
     'javascript': 'language-nodejs',
     'kotlin': 'language-kotlin',
-    'swift': 'language-swift'
+    'swift': 'language-swift',
+    'php': 'language-php'
 }
 
 
