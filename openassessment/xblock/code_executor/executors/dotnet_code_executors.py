@@ -21,6 +21,6 @@ class DotnetCodeExecutor(CompiledLanguageExecutorMixin, CodeExecutor):
         'dotnet build -o ../output'
     )
     
-    # Run the built DLL with the correct project name
-    RUN_COMMAND_STDIN_INPUT_TEMPLATE = 'cd output && dotnet Application.dll'
-    RUN_COMMAND_FILE_INPUT_TEMPLATE = 'cd output && dotnet Application.dll {input_file}'
+    # Run the built DLL - note we stay in the working directory, not cd to output
+    RUN_COMMAND_STDIN_INPUT_TEMPLATE = 'dotnet output/Application.dll'
+    RUN_COMMAND_FILE_INPUT_TEMPLATE = 'dotnet output/Application.dll {input_file}'
