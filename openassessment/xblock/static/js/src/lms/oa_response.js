@@ -735,6 +735,19 @@ foreach ($lines as $line) {
 
 ?>
             `.trim(),
+            dotnet: `
+using System;
+using System.IO;
+
+public class Program {
+  public static void Main(string[] args) {
+    string fileName = args[0];
+    string[] lines = File.ReadAllLines(fileName);
+
+    // Write your code here.
+  }
+}
+            `.trim(),
         };
 
         var editor_textarea = $('.response__submission .submission__answer__part__text__value', this.element);
@@ -762,7 +775,7 @@ foreach ($lines as $line) {
       else if (language == "java"){
         this.codeEditor.setOption("mode", "text/x-java");
       }
-      else if (language == "cpp"){
+      else if (language == "cpp" || language == "dotnet"){
         this.codeEditor.setOption("mode", "text/x-c++src");
       }
       else if (language == "kotlin"){
