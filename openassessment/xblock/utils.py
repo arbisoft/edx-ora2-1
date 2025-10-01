@@ -13,7 +13,8 @@ CODE_LANGUAGES = {
     'javascript': 'language-nodejs',
     'kotlin': 'language-kotlin',
     'swift': 'language-swift',
-    'php': 'language-php'
+    'php': 'language-php',
+    'dotnet': 'language-dotnet',
 }
 
 
