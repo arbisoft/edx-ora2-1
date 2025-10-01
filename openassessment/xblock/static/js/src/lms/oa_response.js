@@ -775,8 +775,11 @@ public class Program {
       else if (language == "java"){
         this.codeEditor.setOption("mode", "text/x-java");
       }
-      else if (language == "cpp" || language == "dotnet"){
+      else if (language == "cpp"){
         this.codeEditor.setOption("mode", "text/x-c++src");
+      }
+      else if (language == "dotnet"){
+        this.codeEditor.setOption("mode", "text/x-csharp");
       }
       else if (language == "kotlin"){
         this.codeEditor.setOption("mode", "text/x-kotlin");
