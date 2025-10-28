@@ -15,7 +15,7 @@ class KotlinCodeExecutor(CompiledLanguageExecutorMixin, CodeExecutor):
 
     # Compile to jar
     COMPILE_COMMAND_TEMPLATE = (
-        'kotlinc -J-Xmx512m -J-Xms256m \
+        'kotlinc -J-Xmx1024m -J-Xms256m \
             -J-Dorg.sqlite.tmpdir=/sandbox/tmp \
                   -cp "/app/lib/*" {source_file} \
                     -include-runtime -d /sandbox/app.jar'
