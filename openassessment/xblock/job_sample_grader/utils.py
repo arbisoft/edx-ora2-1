@@ -56,6 +56,17 @@ def get_assessment_allowed_languages(course_id=None):
     return assessment.allowed_languages.split(',')
 
 
+def get_question_attachments(usage_id=None, problem_name=None):
+    """
+    helper method to get the attachments for a question
+    """
+    question = Question.get_by_usage_key(
+        usage_key=str(usage_id),
+        fallback_title=problem_name
+    )
+    return question.metadata.get("attachments", [])
+
+
 def get_error_response(run_type, error, is_design_problem=False):
     """
     Create a sample error response for a given run and the error to be displayed.

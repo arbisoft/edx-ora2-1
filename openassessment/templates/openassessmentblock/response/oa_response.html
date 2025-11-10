@@ -51,6 +51,28 @@
                 </p>
             </div>
 
+            {% comment %} TODO: list available file to users inside the editing block {% endcomment %}
+            {% if question_attachments %}
+            <div class="question__attachments">
+                <p class="question__attachments__title">
+                    <i class="fa fa-paperclip" aria-hidden="true"></i>
+                    <strong>{% trans "Question Attachments" %}</strong>
+                </p>
+                <ul class="question__attachments__list">
+                    {% for attachment in question_attachments %}
+                        <li class="question__attachment__item">
+                            <div class="question__attachment__info">
+                                <span class="question__attachment__filename">{{ attachment.filename }}</span>
+                                <span class="question__attachment__size">
+                                    ({{ attachment.size|filesizeformat }})
+                                </span>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
             <div class="step__content" data-has-executed-code-before="{{ has_executed_code_before }}">
                 <form class="response__submission">
                     <ol class="list list--fields response__submission__content">

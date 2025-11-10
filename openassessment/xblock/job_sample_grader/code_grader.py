@@ -2,6 +2,7 @@ import glob
 import logging
 import os
 import json
+import requests
 
 from uuid import uuid4
 
@@ -267,6 +268,89 @@ class CodeGraderMixin(object):
 
         return test_case_files
 
+    def download_question_attachments(self, question, temporary_directory):
+        """Download question attachments and create temporary files.
+
+        Args:
+            question: Question model instance
+            temporary_directory: Directory to store downloaded files
+
+        Returns:
+            list: List of file dictionaries with name and content
+        """
+        attachment_files = []
+
+        if not question:
+            return attachment_files
+
+        # Get attachments from question metadata
+        metadata = question.get_parsed_metadata() or {}
+        attachments = metadata.get('attachments', [])
+
+        # Import fileupload API to generate fresh download URLs
+        try:
+            from openassessment.fileupload.backends import get_backend
+            from django.conf import settings
+            fileupload_api = get_backend()
+
+            # Temporarily override prefix to prevent double prefixing
+            original_prefix = getattr(settings, 'FILE_UPLOAD_STORAGE_PREFIX', 'question_attachments')
+            settings.FILE_UPLOAD_STORAGE_PREFIX = ''
+        except ImportError:
+            logger.warning("File upload system not available for downloading attachments")
+            return attachment_files
+
+        try:
+            for attachment in attachments:
+                try:
+                    file_key = attachment.get('key')
+                    filename = attachment.get('filename')
+
+                    if not file_key or not filename:
+                        logger.warning("Missing file_key or filename for attachment: {}".format(attachment))
+                        continue
+
+                    # Generate fresh download URL
+                    download_url = fileupload_api.get_download_url(file_key)
+
+                    if not download_url:
+                        logger.warning("Could not generate download URL for file: {}".format(file_key))
+                        continue
+
+                    logger.info("Generated fresh download URL for {}: {}".format(filename, download_url))
+
+                    response = requests.get(download_url, timeout=10)
+                    response.raise_for_status()
+
+                    # Create temporary file
+                    temp_file = NamedTemporaryFile(
+                        mode='w+b',
+                        prefix='question_attachment_',
+                        suffix='_' + filename,
+                        dir=temporary_directory,
+                        delete=False
+                    )
+
+                    temp_file.write(response.content)
+                    temp_file.close()
+
+                    attachment_files.append({
+                        'name': temp_file.name,
+                        'filename': filename,  # Original filename for reference
+                        'content': response.content,
+                    })
+
+                    logger.info("Downloaded question attachment: {} -> {}".format(filename, temp_file.name))
+
+                except Exception as e:
+                    logger.error("Failed to download attachment {}: {}".format(attachment.get('filename', 'unknown'), str(e)))
+                    continue
+        finally:
+            # Restore original prefix
+            settings.FILE_UPLOAD_STORAGE_PREFIX = original_prefix
+
+        return attachment_files
+
     def run_code(self, run_type, executor_id, source_code, problem_name):
         """Run code for all test cases.
 
@@ -295,13 +379,33 @@ class CodeGraderMixin(object):
         if question_mapping:
             question = question_mapping.question
             test_case_files = self.read_test_cases_from_db(question, run_type)
+
+            # Download question attachments
+            temp_dir = os.path.dirname(test_case_files[0]['input_file']['name']) if test_case_files else '/tmp'
+            logger.info("Temp directory for attachments: {}".format(temp_dir))
+            logger.info("Question ID: {}, Question UUID: {}".format(question.id, question.question_uuid))
+
+            # Check metadata for attachments
+            metadata = question.get_parsed_metadata() or {}
+            attachments = metadata.get('attachments', [])
+            logger.info("Found {} attachments in question metadata".format(len(attachments)))
+
+            question_attachments = self.download_question_attachments(question, temp_dir)
+            logger.info("Successfully downloaded {} attachment files".format(len(question_attachments)))
         else:
             test_case_files = self.read_test_cases_from_file(problem_name, run_type)
+
+        # Combine test case files and question attachments
+        all_files = [files['input_file'] for files in test_case_files] + question_attachments
+
+        logger.info("Total files being passed to CodeExecutor: {}".format(len(all_files)))
+        for i, file_dict in enumerate(all_files):
+            logger.info("File {}: {} (size: {} bytes)".format(i, file_dict.get('name', 'unknown'), len(file_dict.get('content', b''))))
 
         code_executor = CodeExecutorFactory.get_code_executor(
             executor_id,
             source_code=source_code,
-            files=[files['input_file'] for files in test_case_files],
+            files=all_files,
         )
         output = {
             'run_type': run_type,
@@ -375,9 +479,22 @@ class CodeGraderMixin(object):
             'output': None,
             'error': None,
         }
+
+        # Get question attachments for design problems
+        usage_key = self.get_xblock_id()
+        question_attachments = []
+
+        question_mapping = AssessmentQuestionXblockMapping.objects.filter(usage_key=usage_key).first()
+        if question_mapping:
+            question = question_mapping.question
+            question_attachments = self.download_question_attachments(question, '/tmp')
+
+        # Prepare files for execution
         input_file_name = 'input.txt'
+        files = [{'name': input_file_name, 'content': b''}] + question_attachments
+
         code_executor = CodeExecutorFactory.get_code_executor(
-            executor_id, source_code, files=[{'name': input_file_name, 'content': b''}]
+            executor_id, source_code, files=files
         )
 
         if self.is_code_input_from_file and self.executor == CodeExecutorOption.ServerShell.value:
