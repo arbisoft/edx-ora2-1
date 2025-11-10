@@ -35,6 +35,7 @@ from .job_sample_grader.utils import (
     get_question_stub,
     get_assessment_allowed_languages,
     get_question_allowed_languages,
+    get_question_attachments,
 )
 from .resolve_dates import DISTANT_FUTURE
 from .user_data import get_user_preferences
@@ -986,6 +987,10 @@ class SubmissionMixin(object):
             ),
             'assessment_allowed_languages': get_assessment_allowed_languages(
                 course_id
+            ),
+            'question_attachments': get_question_attachments(
+                self.scope_ids.usage_id,
+                self.display_name
             ),
         }
 
