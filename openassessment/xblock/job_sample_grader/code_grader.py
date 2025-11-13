@@ -396,15 +396,34 @@ class CodeGraderMixin(object):
                 # Check if we have a valid cached copy
                 if self._is_cache_valid(cache_file_path):
                     logger.info("Using cached copy for: {}".format(filename))
-                    if self._copy_cached_file(cache_file_path, target_file_path):
-                        attachment_files.append({
-                            'name': target_file_path,
-                            'filename': filename,
-                            'content': open(cache_file_path, 'rb').read(),  # Read from cache
-                        })
-                        continue
-                    else:
-                        logger.warning("Failed to copy cached file, downloading fresh")
+                    try:
+                        # Ensure directory exists and is writable
+                        os.makedirs(os.path.dirname(target_file_path), exist_ok=True)
+                        if self._copy_cached_file(cache_file_path, target_file_path):
+                            attachment_files.append({
+                                'name': target_file_path,
+                                'filename': filename,
+                                'content': open(cache_file_path, 'rb').read(),  # Read from cache
+                            })
+                            continue
+                        else:
+                            logger.warning("Failed to copy cached file, downloading fresh")
+                    except (OSError, IOError) as e:
+                        logger.error("Cannot write to {}: {}. Using fallback directory.".format(target_file_path, str(e)))
+                        # Fallback to /tmp if target directory is not writable
+                        fallback_dir = '/tmp'
+                        fallback_path = os.path.join(fallback_dir, filename)
+                        if self._copy_cached_file(cache_file_path, fallback_path):
+                            target_file_path = fallback_path
+                            attachment_files.append({
+                                'name': target_file_path,
+                                'filename': filename,
+                                'content': open(cache_file_path, 'rb').read(),
+                            })
+                            logger.info("Using fallback path: {}".format(fallback_path))
+                            continue
+                        else:
+                            logger.warning("Failed to copy cached file even to fallback, downloading fresh")
 
                 # Download fresh copy
                 logger.info("Downloading fresh copy for: {}".format(filename))
@@ -432,9 +451,21 @@ class CodeGraderMixin(object):
                     with open(cache_file_path, 'wb') as cache_file:
                         cache_file.write(response.content)
 
-                    # Copy to target directory
-                    with open(target_file_path, 'wb') as target_file:
-                        target_file.write(response.content)
+                    # Copy to target directory with error handling
+                    try:
+                        # Ensure directory exists and is writable
+                        os.makedirs(os.path.dirname(target_file_path), exist_ok=True)
+                        with open(target_file_path, 'wb') as target_file:
+                            target_file.write(response.content)
+                    except (OSError, IOError) as e:
+                        logger.error("Cannot write to {}: {}. Using fallback directory.".format(target_file_path, str(e)))
+                        # Fallback to /tmp if target directory is not writable
+                        fallback_dir = '/tmp'
+                        fallback_path = os.path.join(fallback_dir, filename)
+                        with open(fallback_path, 'wb') as target_file:
+                            target_file.write(response.content)
+                        target_file_path = fallback_path
+                        logger.info("Using fallback path: {}".format(fallback_path))
 
                     attachment_files.append({
                         'name': target_file_path,
@@ -490,9 +521,9 @@ class CodeGraderMixin(object):
             test_case_files = self.read_test_cases_from_db(question, run_type)
 
             # Download question attachments
-            # Place attachments in current working directory (same as user code), not in test case directory
-            current_dir = '.'  # Current working directory where user code executes
-            logger.info("Downloading question attachments to current directory: {}".format(current_dir))
+            # Use the same directory as test case files to ensure we have write permissions
+            temp_dir = os.path.dirname(test_case_files[0]['input_file']['name']) if test_case_files else '/tmp'
+            logger.info("Downloading question attachments to temp directory: {}".format(temp_dir))
             logger.info("Question ID: {}, Question UUID: {}".format(question.id, question.question_uuid))
 
             # Check metadata for attachments
@@ -500,7 +531,7 @@ class CodeGraderMixin(object):
             attachments = metadata.get('attachments', [])
             logger.info("Found {} attachments in question metadata".format(len(attachments)))
 
-            question_attachments = self.download_question_attachments(question, current_dir)
+            question_attachments = self.download_question_attachments(question, temp_dir)
             logger.info("Successfully downloaded {} attachment files".format(len(question_attachments)))
         else:
             test_case_files = self.read_test_cases_from_file(problem_name, run_type)
@@ -597,7 +628,7 @@ class CodeGraderMixin(object):
         question_mapping = AssessmentQuestionXblockMapping.objects.filter(usage_key=usage_key).first()
         if question_mapping:
             question = question_mapping.question
-            question_attachments = self.download_question_attachments(question, '.')  # Current directory
+            question_attachments = self.download_question_attachments(question, '/tmp')  # Use /tmp for design problems
 
         # Prepare files for execution
         input_file_name = 'input.txt'
