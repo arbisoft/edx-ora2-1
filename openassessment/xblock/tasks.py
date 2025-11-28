@@ -2,15 +2,18 @@
 Celery tasks.
 """
 import logging
+import os
 
 from celery import task
 from celery_utils.logged_task import LoggedTask
+from celery.schedules import crontab
 from submissions.api import _get_submission_model
 from opaque_keys.edx.keys import UsageKey  # pylint: disable=import-error
 from openassessment.xblock.signals import CODING_TEST_CASES_EVALUATED
 from xmodule.modulestore.django import modulestore  # pylint: disable=import-error
 
 from openassessment.xblock.job_sample_grader.utils import is_design_problem, get_error_response
+from openassessment.xblock.job_sample_grader.code_grader import CodeGraderMixin
 
 from lms.djangoapps.courseware.models import StudentModule
 
@@ -197,3 +200,55 @@ def run_and_save_staff_test_cases(block_id, sub_uuid, problem_name, **kwargs):
         block_id=block_id,
         submission_uuid=sub_uuid,
     )
+
+
+@task(base=LoggedTask, name="cleanup_question_attachments_cache")
+def cleanup_question_attachments_cache(**kwargs):
+    """
+    Periodic task to clean up expired question attachments cache.
+
+    This task runs daily (at 2 AM by default) to:
+    - Remove expired cache files (older than CACHE_EXPIRY_DAYS)
+    - Manage cache size (keep under MAX_CACHE_SIZE_MB)
+    - Log cleanup statistics
+
+    Expected to be scheduled via celery beat:
+       CELERY_BEAT_SCHEDULE = {
+            'cleanup-question-attachments-cache': {
+                'task': 'cleanup_question_attachments_cache',
+                'schedule': crontab(hour=2, minute=0),  # Daily at 2 AM
+            },
+        }
+    """
+    logger.info("Starting question attachments cache cleanup task")
+
+    try:
+        # Create a CodeGraderMixin instance to access cache management methods
+        grader_mixin = CodeGraderMixin()
+
+        # Run cleanup
+        grader_mixin._cleanup_expired_cache()
+
+        # Log cache statistics after cleanup
+        cache_dir = grader_mixin.CACHE_DIR
+        if os.path.exists(cache_dir):
+            file_count = 0
+            total_size = 0
+            for filename in os.listdir(cache_dir):
+                file_path = os.path.join(cache_dir, filename)
+                if os.path.isfile(file_path):
+                    file_count += 1
+                    total_size += os.path.getsize(file_path)
+
+            size_mb = total_size / (1024 * 1024)
+            logger.info(
+                "Cache cleanup completed. Files: {}, Size: {:.2f} MB, Directory: {}".format(
+                    file_count, size_mb, cache_dir
+                )
+            )
+        else:
+            logger.info("Cache directory does not exist: {}".format(cache_dir))
+
+    except Exception as e:
+        logger.exception("Error during question attachments cache cleanup: {}".format(str(e)))
+        raise
