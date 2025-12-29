@@ -2,6 +2,10 @@ import glob
 import logging
 import os
 import json
+import requests
+import hashlib
+import time
+from datetime import datetime, timedelta
 
 from uuid import uuid4
 
@@ -40,6 +44,11 @@ ALL_CODE_EXECUTORS = sorted(
 
 
 class CodeGraderMixin(object):
+
+    # Cache configuration
+    CACHE_DIR = '/tmp/question_attachments_cache'
+    CACHE_EXPIRY_DAYS = 1  # Cache files for 1 day
+    MAX_CACHE_SIZE_MB = 500  # Maximum cache size in MB
     SERVER_SHELL_EXECUTORS = list(
         filter(
             lambda executor: executor['value'].startswith(
@@ -267,6 +276,221 @@ class CodeGraderMixin(object):
 
         return test_case_files
 
+    def _get_cache_key(self, file_key):
+        """Generate a unique cache key for a file key."""
+        return hashlib.md5(file_key.encode('utf-8')).hexdigest()
+
+    def _get_cache_file_path(self, cache_key, filename):
+        """Get the full path for a cached file."""
+        # Sanitize filename to avoid filesystem issues
+        safe_filename = "".join(c for c in filename if c.isalnum() or c in ('.', '-', '_')).rstrip('.')
+        return os.path.join(self.CACHE_DIR, "{}_{}".format(cache_key, safe_filename))
+
+    def _is_cache_valid(self, cache_file_path):
+        """Check if a cached file is still valid (not expired)."""
+        if not os.path.exists(cache_file_path):
+            return False
+
+        file_age = datetime.now() - datetime.fromtimestamp(os.path.getmtime(cache_file_path))
+        return file_age < timedelta(days=self.CACHE_EXPIRY_DAYS)
+
+    def _cleanup_expired_cache(self):
+        """Remove expired cache files."""
+        try:
+            if not os.path.exists(self.CACHE_DIR):
+                return
+
+            current_time = datetime.now()
+            total_size = 0
+
+            for filename in os.listdir(self.CACHE_DIR):
+                file_path = os.path.join(self.CACHE_DIR, filename)
+                if os.path.isfile(file_path):
+                    file_age = current_time - datetime.fromtimestamp(os.path.getmtime(file_path))
+                    if file_age > timedelta(days=self.CACHE_EXPIRY_DAYS):
+                        os.remove(file_path)
+                        logger.info("Removed expired cache file: {}".format(filename))
+                    else:
+                        total_size += os.path.getsize(file_path)
+
+            # Clean up if cache is too large
+            if total_size > self.MAX_CACHE_SIZE_MB * 1024 * 1024:
+                self._cleanup_oldest_files(int(total_size * 0.7))  # Keep 70% of max size
+
+        except Exception as e:
+            logger.warning("Error during cache cleanup: {}".format(str(e)))
+
+    def _cleanup_oldest_files(self, target_size):
+        """Remove oldest files to reach target cache size."""
+        try:
+            files = []
+            for filename in os.listdir(self.CACHE_DIR):
+                file_path = os.path.join(self.CACHE_DIR, filename)
+                if os.path.isfile(file_path):
+                    files.append({
+                        'path': file_path,
+                        'size': os.path.getsize(file_path),
+                        'mtime': os.path.getmtime(file_path)
+                    })
+
+            # Sort by modification time (oldest first)
+            files.sort(key=lambda x: x['mtime'])
+
+            current_size = 0
+            for file_info in files:
+                if current_size >= target_size:
+                    break
+                os.remove(file_info['path'])
+                current_size += file_info['size']
+                logger.info("Removed old cache file: {}".format(os.path.basename(file_info['path'])))
+
+        except Exception as e:
+            logger.warning("Error during old file cleanup: {}".format(str(e)))
+
+    def _copy_cached_file(self, cache_path, target_path):
+        """Copy a cached file to the target directory."""
+        try:
+            import shutil
+            shutil.copy2(cache_path, target_path)
+            return True
+        except Exception as e:
+            logger.error("Failed to copy cached file: {}".format(str(e)))
+            return False
+
+    def download_question_attachments(self, question, target_directory):
+        """Download question attachments with caching support.
+
+        Args:
+            question: Question model instance
+            target_directory: Directory to copy attachment files to
+
+        Returns:
+            list: List of file dictionaries with name and content
+        """
+        attachment_files = []
+
+        if not question:
+            return attachment_files
+
+        # Get attachments from question metadata
+        metadata = question.get_parsed_metadata() or {}
+        attachments = metadata.get('attachments', [])
+
+        # Create cache directory if it doesn't exist
+        if not os.path.exists(self.CACHE_DIR):
+            os.makedirs(self.CACHE_DIR)
+
+        for attachment in attachments:
+            try:
+                file_key = attachment.get('key')
+                filename = attachment.get('filename')
+
+                if not file_key or not filename:
+                    logger.warning("Missing file_key or filename for attachment: {}".format(attachment))
+                    continue
+
+                cache_key = self._get_cache_key(file_key)
+                cache_file_path = self._get_cache_file_path(cache_key, filename)
+                target_file_path = os.path.join(target_directory, filename)
+
+                # Check if we have a valid cached copy
+                if self._is_cache_valid(cache_file_path):
+                    logger.info("Using cached copy for: {}".format(filename))
+                    try:
+                        # Ensure directory exists and is writable
+                        os.makedirs(os.path.dirname(target_file_path), exist_ok=True)
+                        if self._copy_cached_file(cache_file_path, target_file_path):
+                            attachment_files.append({
+                                'name': target_file_path,
+                                'filename': filename,
+                                'content': open(cache_file_path, 'rb').read(),  # Read from cache
+                            })
+                            continue
+                        else:
+                            logger.warning("Failed to copy cached file, downloading fresh")
+                    except (OSError, IOError) as e:
+                        logger.error("Cannot write to {}: {}. Using fallback directory.".format(target_file_path, str(e)))
+                        # Fallback to /tmp if target directory is not writable
+                        fallback_dir = '/tmp'
+                        fallback_path = os.path.join(fallback_dir, filename)
+                        if self._copy_cached_file(cache_file_path, fallback_path):
+                            target_file_path = fallback_path
+                            attachment_files.append({
+                                'name': target_file_path,
+                                'filename': filename,
+                                'content': open(cache_file_path, 'rb').read(),
+                            })
+                            logger.info("Using fallback path: {}".format(fallback_path))
+                            continue
+                        else:
+                            logger.warning("Failed to copy cached file even to fallback, downloading fresh")
+
+                # Download fresh copy
+                logger.info("Downloading fresh copy for: {}".format(filename))
+
+                # Import fileupload API to generate fresh download URLs
+                try:
+                    from openassessment.fileupload.backends import get_backend
+                    from django.conf import settings
+                    fileupload_api = get_backend()
+
+                    # Temporarily override prefix to prevent double prefixing
+                    original_prefix = getattr(settings, 'FILE_UPLOAD_STORAGE_PREFIX', 'question_attachments')
+                    settings.FILE_UPLOAD_STORAGE_PREFIX = ''
+
+                    download_url = fileupload_api.get_download_url(file_key)
+
+                    if not download_url:
+                        logger.warning("Could not generate download URL for file: {}".format(file_key))
+                        continue
+
+                    response = requests.get(download_url, timeout=10)
+                    response.raise_for_status()
+
+                    # Save to cache
+                    with open(cache_file_path, 'wb') as cache_file:
+                        cache_file.write(response.content)
+
+                    # Copy to target directory with error handling
+                    try:
+                        # Ensure directory exists and is writable
+                        os.makedirs(os.path.dirname(target_file_path), exist_ok=True)
+                        with open(target_file_path, 'wb') as target_file:
+                            target_file.write(response.content)
+                    except (OSError, IOError) as e:
+                        logger.error("Cannot write to {}: {}. Using fallback directory.".format(target_file_path, str(e)))
+                        # Fallback to /tmp if target directory is not writable
+                        fallback_dir = '/tmp'
+                        fallback_path = os.path.join(fallback_dir, filename)
+                        with open(fallback_path, 'wb') as target_file:
+                            target_file.write(response.content)
+                        target_file_path = fallback_path
+                        logger.info("Using fallback path: {}".format(fallback_path))
+
+                    attachment_files.append({
+                        'name': target_file_path,
+                        'filename': filename,
+                        'content': response.content,
+                    })
+
+                    logger.info("Downloaded and cached question attachment: {} -> {}".format(filename, cache_file_path))
+
+                except ImportError:
+                    logger.warning("File upload system not available for downloading attachments")
+                    continue
+                except Exception as e:
+                    logger.error("Failed to download attachment {}: {}".format(attachment.get('filename', 'unknown'), str(e)))
+                    continue
+                finally:
+                    # Restore original prefix
+                    settings.FILE_UPLOAD_STORAGE_PREFIX = original_prefix
+
+            except Exception as e:
+                logger.error("Failed to process attachment {}: {}".format(attachment.get('filename', 'unknown'), str(e)))
+                continue
+
+        return attachment_files
+
     def run_code(self, run_type, executor_id, source_code, problem_name):
         """Run code for all test cases.
 
@@ -295,13 +519,34 @@ class CodeGraderMixin(object):
         if question_mapping:
             question = question_mapping.question
             test_case_files = self.read_test_cases_from_db(question, run_type)
+
+            # Download question attachments
+            # Use the same directory as test case files to ensure we have write permissions
+            temp_dir = os.path.dirname(test_case_files[0]['input_file']['name']) if test_case_files else '/tmp'
+            logger.info("Downloading question attachments to temp directory: {}".format(temp_dir))
+            logger.info("Question ID: {}, Question UUID: {}".format(question.id, question.question_uuid))
+
+            # Check metadata for attachments
+            metadata = question.get_parsed_metadata() or {}
+            attachments = metadata.get('attachments', [])
+            logger.info("Found {} attachments in question metadata".format(len(attachments)))
+
+            question_attachments = self.download_question_attachments(question, temp_dir)
+            logger.info("Successfully downloaded {} attachment files".format(len(question_attachments)))
         else:
             test_case_files = self.read_test_cases_from_file(problem_name, run_type)
+
+        # Combine test case files and question attachments
+        all_files = [files['input_file'] for files in test_case_files] + question_attachments
+
+        logger.info("Total files being passed to CodeExecutor: {}".format(len(all_files)))
+        for i, file_dict in enumerate(all_files):
+            logger.info("File {}: {} (size: {} bytes)".format(i, file_dict.get('name', 'unknown'), len(file_dict.get('content', b''))))
 
         code_executor = CodeExecutorFactory.get_code_executor(
             executor_id,
             source_code=source_code,
-            files=[files['input_file'] for files in test_case_files],
+            files=all_files,
         )
         output = {
             'run_type': run_type,
@@ -375,9 +620,22 @@ class CodeGraderMixin(object):
             'output': None,
             'error': None,
         }
+
+        # Get question attachments for design problems
+        usage_key = self.get_xblock_id()
+        question_attachments = []
+
+        question_mapping = AssessmentQuestionXblockMapping.objects.filter(usage_key=usage_key).first()
+        if question_mapping:
+            question = question_mapping.question
+            question_attachments = self.download_question_attachments(question, '/tmp')  # Use /tmp for design problems
+
+        # Prepare files for execution
         input_file_name = 'input.txt'
+        files = [{'name': input_file_name, 'content': b''}] + question_attachments
+
         code_executor = CodeExecutorFactory.get_code_executor(
-            executor_id, source_code, files=[{'name': input_file_name, 'content': b''}]
+            executor_id, source_code, files=files
         )
 
         if self.is_code_input_from_file and self.executor == CodeExecutorOption.ServerShell.value:
