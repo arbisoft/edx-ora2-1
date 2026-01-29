@@ -15,6 +15,7 @@ CODE_LANGUAGES = {
     'swift': 'language-swift',
     'php': 'language-php',
     'dotnet': 'language-dotnet',
+    'go': 'language-go',
 }
 
 
