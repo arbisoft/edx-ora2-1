@@ -57,6 +57,12 @@ LIMITS = {
         'memory': 768,
         'processes': -1,
     },
+    'go:go-1.25.1': {
+        'cputime': 30,
+        'realtime': 35,
+        'memory': 512,
+        'processes': -1,
+    },
 
     # Scripted languages
     'javascript:nodejs-sqlite-18.14.1': {
