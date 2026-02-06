@@ -748,6 +748,37 @@ public class Program {
   }
 }
             `.trim(),
+
+            go: `
+package main
+
+import (
+    "bufio"
+    "fmt"
+    "os"
+)
+
+func main() {
+    if len(os.Args) < 2 {
+        return
+    }
+
+    fileName := os.Args[1]
+    file, err := os.Open(fileName)
+    if err != nil {
+        return
+    }
+    defer file.Close()
+
+    scanner := bufio.NewScanner(file)
+    for scanner.Scan() {
+        line := scanner.Text()
+
+        // Write your code here.
+        fmt.Println(line)
+    }
+}
+            `.trim(),
         };
 
         var editor_textarea = $('.response__submission .submission__answer__part__text__value', this.element);
@@ -789,6 +820,9 @@ public class Program {
       }
       else if (language == "swift"){
         this.codeEditor.setOption("mode", "text/x-swift");
+      }
+      else if (language == "go"){
+        this.codeEditor.setOption("mode", "text/x-go");
       }
       else if (language == "javascript"){
         this.codeEditor.setOption("mode", "text/javascript");
