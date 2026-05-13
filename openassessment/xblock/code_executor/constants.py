@@ -77,4 +77,20 @@ LIMITS = {
         'memory': 256,
         'processes': -1,
     },
+
+    # Framework
+    'reactjs:reactjs-19-node-24': {
+        'cputime': 20,
+        'realtime': 25,
+        'memory': 256,
+        'processes': -1,
+    },
+
+    # Text Executor
+    'text:alpine-3.21': {
+        'cputime': 20,
+        'realtime': 25,
+        'memory': 256,
+        'processes': -1,
+    },
 }

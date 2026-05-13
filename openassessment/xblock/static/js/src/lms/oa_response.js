@@ -779,6 +779,41 @@ func main() {
     }
 }
             `.trim(),
+
+            reactjs: `
+import React, { useState } from 'react';
+
+export default function Solution({ fileContent }) {
+  // 'fileContent' contains the raw string data read from the test case file.
+  // We can parse it into an array of lines, removing any empty ones.
+  const lines = fileContent ? fileContent.split('\\n').filter(Boolean) : [];
+
+  return (
+    <div className="solution-container">
+      <h1>Hello World</h1>
+      
+      {/* Write your code here. */}
+      
+      <div className="output">
+        <h3>Input Data:</h3>
+        <ul>
+          {lines.map((line, index) => (
+            <li key={index} data-testid={\`input-line-\${index}\`}>
+              {line}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+              `.trim(),
+
+            text: `
+# Start writing your text response below.
+# You may use plain text, Markdown, or any formatting you prefer.
+# No code execution is required for this language option.
+              `.trim(),
         };
 
         var editor_textarea = $('.response__submission .submission__answer__part__text__value', this.element);
@@ -826,6 +861,12 @@ func main() {
       }
       else if (language == "javascript"){
         this.codeEditor.setOption("mode", "text/javascript");
+      }
+      else if (language == "reactjs"){
+        this.codeEditor.setOption("mode", "text/javascript");
+      }
+      else if (language == "text"){
+        this.codeEditor.setOption("mode", "text/plain");
       }
     },
 
