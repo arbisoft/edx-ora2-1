@@ -12,5 +12,5 @@ class ReactCodeExecutorV24(ScriptedLanguageExecutorMixin, CodeExecutor):
     id = CodeExecutor.create_id('reactjs', 'reactjs-19-node-24')
 
     SOURCE_FILE_NAME_TEMPLATE = 'solution.jsx'
-    RUN_COMMAND_STDIN_INPUT_TEMPLATE = 'tsx test-runner.jsx'
-    RUN_COMMAND_FILE_INPUT_TEMPLATE = 'tsx test-runner.jsx {input_file}'
+    RUN_COMMAND_STDIN_INPUT_TEMPLATE = 'tsx ./tmp/grader_data/test-runner.jsx'
+    RUN_COMMAND_FILE_INPUT_TEMPLATE = 'tsx ./tmp/grader_data/test-runner.jsx {input_file}'
