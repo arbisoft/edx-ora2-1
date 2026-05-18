@@ -16,6 +16,8 @@ CODE_LANGUAGES = {
     'php': 'language-php',
     'dotnet': 'language-dotnet',
     'go': 'language-go',
+    'reactjs': 'language-nodejs',
+    'text': 'language-markup',
 }
 
 
